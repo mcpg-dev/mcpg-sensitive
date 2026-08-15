@@ -1,0 +1,20 @@
+[package]
+name = "mcpg-sensitive"
+version = "0.1.0-beta.13"
+license = "Apache-2.0"
+edition = "2024"
+description = """
+`Sensitive<T>` newtype: a Debug impl that prints `***`, no Display
+impl (so accidental `format!("{}", value)` won't compile), and
+serde / schemars pass-through to the inner value. Wrap config
+fields that hold credentials so they don't leak through
+`tracing::info!(?config)` or any other Debug-formatted log.
+"""
+
+[dependencies]
+schemars = { version = "0.8", default-features = false, features = ["derive", "preserve_order"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+serde_yaml = "0.9"
