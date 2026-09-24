@@ -137,16 +137,20 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for Sensitive<T> {
 }
 
 impl<T: JsonSchema> JsonSchema for Sensitive<T> {
-    fn schema_name() -> String {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
         T::schema_name()
     }
 
-    fn json_schema(generator: &mut schemars::r#gen::SchemaGenerator) -> schemars::schema::Schema {
+    fn schema_id() -> std::borrow::Cow<'static, str> {
+        T::schema_id()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
         T::json_schema(generator)
     }
 
-    fn is_referenceable() -> bool {
-        T::is_referenceable()
+    fn inline_schema() -> bool {
+        T::inline_schema()
     }
 }
 
