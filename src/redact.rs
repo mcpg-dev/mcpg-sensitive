@@ -58,6 +58,7 @@ pub fn looks_like_credential(s: &str) -> bool {
         || s.starts_with("ghp_")
         || s.starts_with("xoxb-")
         || s.starts_with("xoxp-")
+        || s.starts_with("whsec_")
     {
         return true;
     }
@@ -181,6 +182,24 @@ mod tests {
     fn redacts_jwt_like_string() {
         let v = json!("eyJhbGciOi.eyJzdWIiOi.signaturepart");
         assert_eq!(redact_credentials_with(&v, identity), json!("[redacted]"));
+    }
+
+    #[test]
+    fn redacts_standard_webhooks_secrets_under_any_key() {
+        let secret = "whsec_MfKQ9r8GKYqrTwjUPD8ILPZIo2LaLaSw";
+        assert!(looks_like_credential(secret));
+        let v = json!({
+            "delivery": {"mode": "webhook", "url": "https://hooks.example.com/cb", "secret": secret},
+            "previous": secret,
+            "list": [secret, "whsec"],
+        });
+        let r = redact_credentials_with(&v, identity);
+        assert_eq!(r["delivery"]["secret"], "[redacted]");
+        assert_eq!(r["previous"], "[redacted]");
+        assert_eq!(r["list"][0], "[redacted]");
+        assert_eq!(r["list"][1], "whsec");
+        assert_eq!(r["delivery"]["url"], "https://hooks.example.com/cb");
+        assert!(!r.to_string().contains("MfKQ"));
     }
 
     #[test]
